@@ -1,0 +1,25 @@
+name: Deploy Caddyfile
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'nodes/caddy/**'
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Caddyfile
+        run: caddy validate --config ${{ github.workspace }}/nodes/caddy/Caddyfile
+
+      - name: Deploy Caddyfile
+        run: sudo cp ${{ github.workspace }}/nodes/caddy/Caddyfile /etc/caddy/Caddyfile
+
+      - name: Reload Caddy
+        run: sudo systemctl reload caddy
+
+      - name: Verify
+        run: systemctl is-active caddy
