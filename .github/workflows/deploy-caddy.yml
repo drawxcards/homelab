@@ -19,7 +19,7 @@ jobs:
         run: sudo cp ${{ github.workspace }}/nodes/caddy/Caddyfile /etc/caddy/Caddyfile
 
       - name: Reload Caddy
-        run: sudo systemctl reload caddy
+        run: sudo -u caddy caddy reload --config /etc/caddy/Caddyfile --force
 
       - name: Verify
         run: systemctl is-active caddy
