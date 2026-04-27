@@ -1,0 +1,250 @@
+# --- Reusable blocks ---
+{
+	admin 0.0.0.0:2019 {
+		origins localhost:2019 127.0.0.1:2019
+	}
+
+	metrics {
+		per_host
+	}
+}
+(tls_cf) {
+	tls {
+		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+	}
+}
+
+(proxy_defaults) {
+	header {
+		X-Forwarded-Proto https
+	}
+}
+
+# --- Wildcard cert (IMPORTANT: ensures single cert for all subdomains) ---
+*.hsrv.cc {
+	import tls_cf
+	respond "Not configured" 404
+}
+
+# --- Test endpoint ---
+caddy.hsrv.cc {
+	import tls_cf
+	respond "Welcome to my reverse proxy!"
+}
+
+# --- Services ---
+
+bazarr.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:6767
+}
+
+bitwarden.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy https://10.0.20.43:8000 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+bt.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:8080
+}
+
+chrome.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.140:3000
+}
+
+dockge.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:5001
+}
+
+dockhand.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:3000
+}
+
+dozzle.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:8082
+}
+
+draw.hsrv.cc, excalidraw.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:5000
+}
+
+ha.hsrv.cc, homeassistant.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.70:8123
+}
+
+hb.hsrv.cc, homebridge.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.70.11:8581
+}
+
+immich.hsrv.cc, photo.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:2283
+}
+
+ipmi.hsrv.cc {
+	import tls_cf
+	reverse_proxy https://10.0.10.11:443 {
+		header_up Host {upstream_hostport}
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+ittools.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:8088
+}
+
+jellyfin.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:8096
+}
+
+kasm.hsrv.cc {
+	import tls_cf
+	reverse_proxy https://10.0.20.84:443 {
+		header_up Host {host}
+		header_up X-Forwarded-Proto https
+		header_up X-Forwarded-Port 443
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+movie.hsrv.cc, sonarr.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:7878
+}
+
+# npm.hsrv.cc {
+# 	import tls_cf
+# 	import proxy_defaults
+# 	reverse_proxy 10.0.20.30:81
+# }
+
+pbs.hsrv.cc {
+	import tls_cf
+	reverse_proxy https://10.0.20.28:8007 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+pihole.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.40:80
+}
+
+prowlarr.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:9696
+}
+
+pve.hsrv.cc {
+	import tls_cf
+	reverse_proxy https://10.0.10.10:8006 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+pve2.hsrv.cc {
+	import tls_cf
+	reverse_proxy https://10.0.20.16:8006 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+pvebox.hsrv.cc {
+	import tls_cf
+	reverse_proxy https://10.0.10.14:8006 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+pvecube.hsrv.cc {
+	import tls_cf
+	reverse_proxy https://10.0.20.16:8006 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+radarr.hsrv.cc, tv.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:8989
+}
+
+stash.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:9999
+}
+
+unifi.hsrv.cc {
+	import tls_cf
+	reverse_proxy https://10.0.1.1:443 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+unraid.hsrv.cc {
+	import tls_cf
+	reverse_proxy https://10.0.20.10:443 {
+		header_down Location https://10.0.20.10:443 https://unraid.hsrv.cc
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+grafana.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.42:3000
+}
+prometheus.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.44:9090
+}
