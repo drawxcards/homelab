@@ -180,15 +180,6 @@ pve.hsrv.cc {
 	}
 }
 
-pve2.hsrv.cc {
-	import tls_cf
-	reverse_proxy https://10.0.20.16:8006 {
-		transport http {
-			tls_insecure_skip_verify
-		}
-	}
-}
-
 pvebox.hsrv.cc {
 	import tls_cf
 	reverse_proxy https://10.0.10.14:8006 {
