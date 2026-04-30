@@ -134,7 +134,7 @@ movie.hsrv.cc, sonarr.hsrv.cc {
 
 pbs.hsrv.cc {
 	import tls_cf
-	reverse_proxy https://10.0.20.28:8007 {
+	reverse_proxy https://10.0.20.29:8007 {
 		transport http {
 			tls_insecure_skip_verify
 		}
