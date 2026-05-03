@@ -212,4 +212,10 @@ prometheus.hsrv.cc {
 	import proxy_defaults
 	reverse_proxy 10.0.20.44:9090
 }
+
+gitea.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.50:3000
+}
 # test deploy Mon Apr 27 19:31:22 AEST 2026
