@@ -56,12 +56,13 @@ services:
       - VPN_TYPE=openvpn
       - OPENVPN_USER=${NORDVPN_USER}
       - OPENVPN_PASSWORD=${NORDVPN_PASS}
-      - SERVER_COUNTRIES=Australia
+      - SERVER_COUNTRIES=Switzerland
+      - UPDATER_PERIOD=24h
     healthcheck:
       test: ['CMD', '/gluetun-entrypoint', 'healthcheck']
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 15s
+      timeout: 10s
+      retries: 8
       start_period: 90s
     networks:
       - media
