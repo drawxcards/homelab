@@ -126,10 +126,16 @@ kasm.hsrv.cc {
 	}
 }
 
-movie.hsrv.cc, sonarr.hsrv.cc {
+radarr.hsrv.cc, movie.hsrv.cc {
 	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:7878
+}
+
+sonarr.hsrv.cc, tv.hsrv.cc {
+	import tls_cf
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:8989
 }
 
 pbs.hsrv.cc {
@@ -169,12 +175,6 @@ pvebox.hsrv.cc {
 			tls_insecure_skip_verify
 		}
 	}
-}
-
-radarr.hsrv.cc, tv.hsrv.cc {
-	import tls_cf
-	import proxy_defaults
-	reverse_proxy 10.0.20.10:8989
 }
 
 stash.hsrv.cc {
