@@ -251,6 +251,6 @@ unraid.hsrv.cc {
 	import proxy_defaults
 	reverse_proxy https://10.0.20.10:443 {
 		import insecure_https
-		header_down Location "^https://10\.0\.20\.10(:443)?(.*)" "https://unraid.hsrv.cc{2}"
+		header_down Location "^https://10\.0\.20\.10(?::\d+)?(.*)" "https://unraid.hsrv.cc$1"
 	}
 }
