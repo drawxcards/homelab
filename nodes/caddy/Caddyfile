@@ -8,6 +8,7 @@
 		per_host
 	}
 }
+
 (tls_cf) {
 	tls {
 		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
@@ -15,33 +16,32 @@
 }
 
 (proxy_defaults) {
+	encode zstd gzip
 	header {
-		X-Forwarded-Proto https
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		-Server
 	}
 }
 
-# --- Wildcard cert (IMPORTANT: ensures single cert for all subdomains) ---
 *.hsrv.cc {
-	import tls_cf
-	respond "Not configured" 404
+	abort
 }
 
 # --- Test endpoint ---
 caddy.hsrv.cc {
-	import tls_cf
 	respond "Welcome to my reverse proxy!"
 }
 
 # --- Services ---
 
 bazarr.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:6767
 }
 
 bitwarden.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy https://10.0.20.43:8000 {
 		transport http {
@@ -51,49 +51,41 @@ bitwarden.hsrv.cc {
 }
 
 bt.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:8080
 }
 
 dockhand.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:3000
 }
 
 dozzle.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:8082
 }
 
 draw.hsrv.cc, excalidraw.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:5000
 }
 
 ha.hsrv.cc, homeassistant.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.70:8123
 }
 
 hb.hsrv.cc, homebridge.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.70.11:8581
 }
 
 immich.hsrv.cc, photo.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:2283
 }
 
 ipmi.hsrv.cc {
-	import tls_cf
 	reverse_proxy https://10.0.10.11:443 {
 		header_up Host {upstream_hostport}
 		transport http {
@@ -103,19 +95,16 @@ ipmi.hsrv.cc {
 }
 
 ittools.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:8088
 }
 
 jellyfin.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:8096
 }
 
 kasm.hsrv.cc {
-	import tls_cf
 	reverse_proxy https://10.0.20.84:443 {
 		header_up Host {host}
 		header_up X-Forwarded-Proto https
@@ -127,19 +116,16 @@ kasm.hsrv.cc {
 }
 
 radarr.hsrv.cc, movie.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:7878
 }
 
 sonarr.hsrv.cc, tv.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:8989
 }
 
 pbs.hsrv.cc {
-	import tls_cf
 	reverse_proxy https://10.0.20.29:8007 {
 		transport http {
 			tls_insecure_skip_verify
@@ -148,19 +134,16 @@ pbs.hsrv.cc {
 }
 
 pihole.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.40:80
 }
 
 prowlarr.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:9696
 }
 
 pve.hsrv.cc {
-	import tls_cf
 	reverse_proxy https://10.0.10.10:8006 {
 		transport http {
 			tls_insecure_skip_verify
@@ -169,7 +152,6 @@ pve.hsrv.cc {
 }
 
 pvebox.hsrv.cc {
-	import tls_cf
 	reverse_proxy https://10.0.10.14:8006 {
 		transport http {
 			tls_insecure_skip_verify
@@ -178,13 +160,11 @@ pvebox.hsrv.cc {
 }
 
 stash.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:9999
 }
 
 unifi.hsrv.cc {
-	import tls_cf
 	reverse_proxy https://10.0.1.1:443 {
 		transport http {
 			tls_insecure_skip_verify
@@ -193,7 +173,6 @@ unifi.hsrv.cc {
 }
 
 unraid.hsrv.cc {
-	import tls_cf
 	reverse_proxy https://10.0.20.10:443 {
 		header_down Location https://10.0.20.10:443 https://unraid.hsrv.cc
 		transport http {
@@ -203,18 +182,15 @@ unraid.hsrv.cc {
 }
 
 grafana.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.42:3000
 }
 prometheus.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.44:9090
 }
 
 gitea.hsrv.cc {
-	import tls_cf
 	import proxy_defaults
 	reverse_proxy 10.0.20.50:3000
 }
