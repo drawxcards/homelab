@@ -70,7 +70,7 @@ services:
       - VPN_TYPE=openvpn
       - OPENVPN_USER=${NORDVPN_USER}
       - OPENVPN_PASSWORD=${NORDVPN_PASS}
-      - SERVER_COUNTRIES={NORDVPN_COUNTRY}
+      - SERVER_COUNTRIES=${NORDVPN_COUNTRY}
       - UPDATER_PERIOD=24h
     healthcheck:
       test: ['CMD', '/gluetun-entrypoint', 'healthcheck']
