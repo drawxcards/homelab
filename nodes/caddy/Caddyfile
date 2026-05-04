@@ -1,118 +1,82 @@
-# --- Reusable blocks ---
+# =========================================================
+# Global Configuration
+# =========================================================
 {
 	admin 0.0.0.0:2019 {
 		origins localhost:2019 127.0.0.1:2019
 	}
 
+	acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+
 	metrics {
 		per_host
 	}
-}
 
-(tls_cf) {
-	tls {
-		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 50mb
+			roll_keep 10
+			roll_keep_for 720h
+		}
+		format json
 	}
 }
 
+# =========================================================
+# Reusable Snippets
+# =========================================================
+
+# --- Security + Encoding (client-facing headers only) ---
 (proxy_defaults) {
 	encode zstd gzip
+
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
 	}
 }
 
+# --- HTTPS upstreams with self-signed certs ---
+(insecure_https) {
+	transport http {
+		tls_insecure_skip_verify
+	}
+}
+
+# --- Appliances that require upstream host preservation ---
+(appliance_https) {
+	import insecure_https
+	header_up Host {upstream_hostport}
+}
+
+# =========================================================
+# Wildcard TLS + Default Deny
+# =========================================================
+
 *.hsrv.cc {
+	# TLS handled automatically via global acme_dns
 	abort
 }
 
-# --- Test endpoint ---
+# =========================================================
+# Core / Health
+# =========================================================
+
 caddy.hsrv.cc {
-	respond "Welcome to my reverse proxy!"
+	import proxy_defaults
+	respond "Caddy is running"
 }
 
-# --- Services ---
+# =========================================================
+# Media Stack
+# =========================================================
 
 bazarr.hsrv.cc {
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:6767
-}
-
-bitwarden.hsrv.cc {
-	import proxy_defaults
-	reverse_proxy https://10.0.20.43:8000 {
-		transport http {
-			tls_insecure_skip_verify
-		}
-	}
-}
-
-bt.hsrv.cc {
-	import proxy_defaults
-	reverse_proxy 10.0.20.10:8080
-}
-
-dockhand.hsrv.cc {
-	import proxy_defaults
-	reverse_proxy 10.0.20.10:3000
-}
-
-dozzle.hsrv.cc {
-	import proxy_defaults
-	reverse_proxy 10.0.20.10:8082
-}
-
-draw.hsrv.cc, excalidraw.hsrv.cc {
-	import proxy_defaults
-	reverse_proxy 10.0.20.10:5000
-}
-
-ha.hsrv.cc, homeassistant.hsrv.cc {
-	import proxy_defaults
-	reverse_proxy 10.0.20.70:8123
-}
-
-hb.hsrv.cc, homebridge.hsrv.cc {
-	import proxy_defaults
-	reverse_proxy 10.0.70.11:8581
-}
-
-immich.hsrv.cc, photo.hsrv.cc {
-	import proxy_defaults
-	reverse_proxy 10.0.20.10:2283
-}
-
-ipmi.hsrv.cc {
-	reverse_proxy https://10.0.10.11:443 {
-		header_up Host {upstream_hostport}
-		transport http {
-			tls_insecure_skip_verify
-		}
-	}
-}
-
-ittools.hsrv.cc {
-	import proxy_defaults
-	reverse_proxy 10.0.20.10:8088
-}
-
-jellyfin.hsrv.cc {
-	import proxy_defaults
-	reverse_proxy 10.0.20.10:8096
-}
-
-kasm.hsrv.cc {
-	reverse_proxy https://10.0.20.84:443 {
-		header_up Host {host}
-		header_up X-Forwarded-Proto https
-		header_up X-Forwarded-Port 443
-		transport http {
-			tls_insecure_skip_verify
-		}
-	}
 }
 
 radarr.hsrv.cc, movie.hsrv.cc {
@@ -125,38 +89,54 @@ sonarr.hsrv.cc, tv.hsrv.cc {
 	reverse_proxy 10.0.20.10:8989
 }
 
-pbs.hsrv.cc {
-	reverse_proxy https://10.0.20.29:8007 {
-		transport http {
-			tls_insecure_skip_verify
-		}
-	}
-}
-
-pihole.hsrv.cc {
-	import proxy_defaults
-	reverse_proxy 10.0.20.40:80
-}
-
 prowlarr.hsrv.cc {
 	import proxy_defaults
 	reverse_proxy 10.0.20.10:9696
 }
 
-pve.hsrv.cc {
-	reverse_proxy https://10.0.10.10:8006 {
-		transport http {
-			tls_insecure_skip_verify
-		}
+jellyfin.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:8096 {
+		header_up X-Real-IP {remote_host}
 	}
 }
 
-pvebox.hsrv.cc {
-	reverse_proxy https://10.0.10.14:8006 {
-		transport http {
-			tls_insecure_skip_verify
-		}
+# =========================================================
+# Apps / Tools
+# =========================================================
+
+bitwarden.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy https://10.0.20.43:8000 {
+		import insecure_https
 	}
+}
+
+immich.hsrv.cc, photo.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:2283 {
+		header_up X-Real-IP {remote_host}
+	}
+}
+
+draw.hsrv.cc, excalidraw.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:5000
+}
+
+ittools.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:8088
+}
+
+dockhand.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:3000
+}
+
+dozzle.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:8082
 }
 
 stash.hsrv.cc {
@@ -164,34 +144,113 @@ stash.hsrv.cc {
 	reverse_proxy 10.0.20.10:9999
 }
 
-unifi.hsrv.cc {
-	reverse_proxy https://10.0.1.1:443 {
-		transport http {
-			tls_insecure_skip_verify
-		}
+gitea.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy 10.0.20.50:3000 {
+		header_up X-Real-IP {remote_host}
 	}
 }
 
-unraid.hsrv.cc {
-	reverse_proxy https://10.0.20.10:443 {
-		header_down Location https://10.0.20.10:443 https://unraid.hsrv.cc
-		transport http {
-			tls_insecure_skip_verify
-		}
-	}
+# =========================================================
+# Home Automation
+# =========================================================
+
+homeassistant.hsrv.cc, ha.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy 10.0.20.70:8123
 }
+
+homebridge.hsrv.cc, hb.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy 10.0.70.11:8581
+}
+
+# =========================================================
+# Observability
+# =========================================================
 
 grafana.hsrv.cc {
 	import proxy_defaults
+	header -X-Frame-Options
 	reverse_proxy 10.0.20.42:3000
 }
+
 prometheus.hsrv.cc {
 	import proxy_defaults
 	reverse_proxy 10.0.20.44:9090
 }
 
-gitea.hsrv.cc {
+# =========================================================
+# Infrastructure (HTTP)
+# =========================================================
+
+pihole.hsrv.cc {
 	import proxy_defaults
-	reverse_proxy 10.0.20.50:3000
+	reverse_proxy 10.0.20.40:80
 }
-# test deploy Mon Apr 27 19:31:22 AEST 2026
+
+bt.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy 10.0.20.10:8080
+}
+
+# =========================================================
+# Infrastructure (HTTPS / Appliances)
+# =========================================================
+
+pve.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy https://10.0.10.10:8006 {
+		import insecure_https
+	}
+}
+
+pvebox.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy https://10.0.10.14:8006 {
+		import insecure_https
+	}
+}
+
+pbs.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy https://10.0.20.29:8007 {
+		import insecure_https
+	}
+}
+
+unifi.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy https://10.0.1.1:443 {
+		import insecure_https
+	}
+}
+
+ipmi.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy https://10.0.10.11:443 {
+		import appliance_https
+	}
+}
+
+kasm.hsrv.cc {
+	import proxy_defaults
+	header -X-Frame-Options
+
+	reverse_proxy https://10.0.20.84:443 {
+		import insecure_https
+		header_up Host {host}
+	}
+}
+
+# =========================================================
+# Special Handling (Broken Upstreams)
+# =========================================================
+
+unraid.hsrv.cc {
+	import proxy_defaults
+	reverse_proxy https://10.0.20.10:443 {
+		import insecure_https
+		header_down Location "^https://10\.0\.20\.10(:443)?(.*)" "https://unraid.hsrv.cc{2}"
+	}
+}
