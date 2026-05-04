@@ -68,6 +68,7 @@ services:
       - TZ=${TZ}
       - VPN_SERVICE_PROVIDER=nordvpn
       - VPN_TYPE=openvpn
+      - DOT=off
       - OPENVPN_USER=${NORDVPN_USER}
       - OPENVPN_PASSWORD=${NORDVPN_PASS}
       - SERVER_COUNTRIES=${NORDVPN_COUNTRY}
